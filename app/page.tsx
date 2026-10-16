@@ -1,236 +1,380 @@
-"use client";
-
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+// app/page.tsx - ProjectKids landing page.
+// Server component: all interactivity lives in the imported client components
+// (HeroTopicForm, HomeCta, ReadingLevelDemo, HeroProjectDemo, ThemeToggle).
+// Lives OUTSIDE the (app) route group so it has no sidebar. Keep "/" public in proxy.ts.
 import Link from "next/link";
-import { useUser } from "@clerk/nextjs";
-import { SignInButton } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { TEMPLATE_LIST, type TemplateId } from "@/convex/constants";
+import { BrandMark } from "@/components/BrandMark";
 
-const FEATURES = [
+import { HeroTopicForm } from "@/components/HeroTopicForm";
+import { HeroProjectDemo } from "@/components/HeroProjectDemo";
+import { ReadingLevelDemo } from "@/components/ReadingLevelDemo";
+import { HomeCta } from "@/components/HomeCta";
+import { ThemeToggle } from "./components/ThemeToggle";
+
+interface Step {
+  title: string;
+  text: string;
+}
+
+const STEPS: Step[] = [
   {
-    title: "Live Roast Battles",
-    description:
-      "Trade burns with friends in real-time multiplayer matches powered by Convex. Lag is someone else's problem.",
-    icon: "💥",
+    title: "Type a topic",
+    text: "Something from class, like “History of South Africa” or “Aquatic animals”. Choose a reading level and a template.",
   },
   {
-    title: "Private Roast Rooms",
-    description:
-      "Create a room, invite your most ruthless friends, or join any open lobby. Add bot roasters while you wait.",
-    icon: "🎙️",
+    title: "We look it up and write it",
+    text: "ProjectKids finds web pages and pictures, then writes your project from what those pages say. It usually takes under a minute.",
   },
   {
-    title: "Health & Elimination",
-    description:
-      "Every burn does damage, every shield blocks it. Health hits zero, you're out. Last roaster standing wins.",
-    icon: "❤️‍🔥",
+    title: "Download or share",
+    text: "Get a PDF to print or hand in. Change the template whenever you like. Your project stays private until you choose to share the link.",
   },
 ];
 
-// Mirrors the five real card categories in lib/roastRules.ts — keep colors
-// and emojis in sync with CATEGORY_STYLES in components/RoastCard.tsx.
-const DEMO_CARDS = [
+const INSIDE: string[] = [
+  "An introduction",
+  "Sections with pictures",
+  "“Did you know?” facts",
+  "A word list that explains the tricky words",
+  "A summary at the end",
+  "A bibliography of the pages we used",
+];
+
+interface GrownUpNote {
+  title: string;
+  text: string;
+}
+
+const GROWN_UP_NOTES: GrownUpNote[] = [
   {
-    color: "bg-red-600",
-    value: "🔥",
-    label: "BURN",
-    rotate: -18,
-    x: -110,
-    y: 10,
+    title: "Facts you can check",
+    text: "Every project ends with a bibliography of real web pages. The writing is based on those pages, so you can read them together.",
   },
   {
-    color: "bg-blue-600",
-    value: "🛡️",
-    label: "SHIELD",
-    rotate: -6,
-    x: -55,
-    y: -12,
+    title: "Written for the reader's age",
+    text: "Three reading levels change the words, the sentence length and how much detail is included. Hard history is told calmly, without graphic detail.",
   },
   {
-    color: "bg-orange-500",
-    value: "🎤",
-    label: "COMBO",
-    rotate: 4,
-    x: 0,
-    y: 4,
-  },
-  {
-    color: "bg-purple-600",
-    value: "🎯",
-    label: "TARGET",
-    rotate: 14,
-    x: 55,
-    y: -8,
-  },
-  {
-    color: "bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500",
-    value: "✨",
-    label: "WILD",
-    rotate: 24,
-    x: 110,
-    y: 10,
+    title: "Private by default",
+    text: "Nothing is public until the owner switches a project to public and shares the link.",
   },
 ];
 
-export default function Home() {
-  const { isSignedIn } = useUser();
-  const router = useRouter();
+const SECTION_TITLE =
+  "font-[family-name:var(--font-display)] text-3xl font-extrabold leading-tight text-[#14213D] dark:text-[#E8EEFF] sm:text-4xl";
+const BODY_TEXT = "text-[#41507A] dark:text-[#A9B6D8]";
 
-  useEffect(() => {
-    if (isSignedIn) router.prefetch("/lobby");
-  }, [isSignedIn, router]);
+/** A tiny drawing of each template's page layout, built from plain boxes. */
+function TemplateSketch({
+  id,
+  accent,
+  soft,
+}: {
+  id: TemplateId;
+  accent: string;
+  soft: string;
+}) {
+  const line = "h-1.5 rounded-full bg-[#14213D]/20 dark:bg-[#E8EEFF]/25";
+  const frame =
+    "h-32 overflow-hidden rounded-lg border-2 border-[#14213D]/30 bg-white dark:border-[#E8EEFF]/30 dark:bg-[#0B1220]";
 
+  switch (id) {
+    case "classic":
+      return (
+        <div aria-hidden className={frame}>
+          <div className="h-8" style={{ backgroundColor: accent }} />
+          <div className="space-y-1.5 p-3">
+            <div className={`${line} w-full`} />
+            <div className={`${line} w-5/6`} />
+            <div className={`${line} w-2/3`} />
+            <div className="pt-1" />
+            <div className={`${line} w-full`} />
+            <div className={`${line} w-3/4`} />
+          </div>
+        </div>
+      );
+    case "factfile":
+      return (
+        <div aria-hidden className={frame}>
+          <div className="space-y-1.5 p-3">
+            <div
+              className="h-2 w-1/2 rounded-full"
+              style={{ backgroundColor: accent }}
+            />
+            <div className={`${line} w-full`} />
+            <div className={`${line} w-4/5`} />
+            <div className="grid grid-cols-2 gap-2 pt-2">
+              <div
+                className="h-9 rounded-md border-2 border-dashed"
+                style={{ borderColor: accent, backgroundColor: soft }}
+              />
+              <div
+                className="h-9 rounded-md border-2 border-dashed"
+                style={{ borderColor: accent, backgroundColor: soft }}
+              />
+            </div>
+          </div>
+        </div>
+      );
+    case "storybook":
+      return (
+        <div aria-hidden className={frame}>
+          <div className="space-y-2 p-3">
+            <div className="h-16 rounded-md" style={{ backgroundColor: soft }}>
+              <div
+                className="ml-3 mt-3 h-6 w-6 rounded-full"
+                style={{ backgroundColor: accent }}
+              />
+            </div>
+            <div className={`${line} h-2 w-3/4`} />
+            <div className={`${line} h-2 w-1/2`} />
+          </div>
+        </div>
+      );
+    case "timeline":
+      return (
+        <div aria-hidden className={`${frame} relative`}>
+          <div
+            className="absolute bottom-3 left-6 top-3 w-0.5"
+            style={{ backgroundColor: accent }}
+          />
+          <div className="space-y-3.5 py-3 pl-10 pr-3">
+            {[0, 1, 2].map((n) => (
+              <div key={n} className="relative">
+                <span
+                  className="absolute -left-[22px] top-0 h-3 w-3 rounded-full border-2 border-white dark:border-[#0B1220]"
+                  style={{ backgroundColor: accent }}
+                />
+                <div className={`${line} w-full`} />
+                <div className={`${line} mt-1 w-2/3`} />
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+  }
+}
+
+export default function HomePage() {
   return (
-    <main className="relative min-h-screen flex flex-col items-center justify-center px-6 text-center overflow-hidden bg-white dark:bg-gray-950">
-      <div className="hidden dark:block absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute top-[-250px] left-[-250px] w-[700px] h-[700px] rounded-full bg-red-900 opacity-30"
-          animate={{ scale: [1, 1.3, 1], x: [0, 120, 0], y: [0, -80, 0] }}
-          transition={{ duration: 25, repeat: Infinity, repeatType: "mirror" }}
-        />
-        <motion.div
-          className="absolute bottom-[-300px] right-[-300px] w-[800px] h-[800px] rounded-full bg-orange-950 opacity-20"
-          animate={{ scale: [1, 1.25, 1], x: [0, -100, 0], y: [0, 100, 0] }}
-          transition={{ duration: 30, repeat: Infinity, repeatType: "mirror" }}
-        />
-      </div>
-
-      <div className="relative h-52 w-full max-w-sm mb-10">
-        {DEMO_CARDS.map((card, i) => (
-          <motion.div
-            key={i}
-            className={`absolute w-16 h-24 rounded-2xl ${card.color} shadow-xl border-2 border-white/30 flex flex-col items-center justify-center gap-1`}
-            style={{
-              left: "50%",
-              top: "50%",
-              marginLeft: card.x - 32,
-              marginTop: card.y - 48,
-              rotate: card.rotate,
-              zIndex: i,
-            }}
-            animate={{ y: [0, -12, 0] }}
-            transition={{
-              duration: 3,
-              delay: i * 0.4,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          >
-            <span className="text-2xl">{card.value}</span>
-            <span className="text-white text-[8px] font-black tracking-widest">
-              {card.label}
-            </span>
-          </motion.div>
-        ))}
-      </div>
-
-      <motion.h1
-        className="text-5xl md:text-7xl font-black text-black dark:text-white tracking-tight relative z-10"
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7 }}
+    <div className="min-h-screen bg-[#F2F9FD] text-[#14213D] dark:bg-[#0B1220] dark:text-[#E8EEFF]">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-[#FFE45E] focus:px-4 focus:py-2 focus:font-bold focus:text-[#14213D]"
       >
-        <span className="text-red-500">ROAST</span>
-      </motion.h1>
+        Skip to content
+      </a>
 
-      <motion.p
-        className="mt-5 text-gray-600 dark:text-gray-300 text-lg max-w-xl relative z-10"
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.7 }}
-      >
-        Multiplayer roast battle card game. Talk trash, deal damage, don&apos;t
-        get roasted out.
-      </motion.p>
-
-      <motion.div
-        className="mt-8 flex flex-wrap gap-4 justify-center relative z-10"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4, duration: 0.7 }}
-      >
-        {isSignedIn ? (
-          <Button
-            size="lg"
-            className="text-lg px-10 py-6 bg-red-600 hover:bg-red-500 text-white shadow-lg"
-            onClick={() => router.push("/lobby")}
-          >
-            Enter the Roast →
-          </Button>
-        ) : (
-          <>
-            <SignInButton mode="modal" forceRedirectUrl="/lobby">
-              <Button
-                size="lg"
-                className="text-lg px-10 py-6 bg-red-600 hover:bg-red-500 text-white shadow-lg"
-              >
-                Sign In to Start Roasting
-              </Button>
-            </SignInButton>
-            <Link href="/sign-up">
-              <Button
-                variant="outline"
-                size="lg"
-                className="text-lg px-10 py-6 border-orange-500 text-orange-600 dark:text-orange-400"
-              >
-                Create Account
-              </Button>
-            </Link>
-          </>
-        )}
-      </motion.div>
-
-      <motion.div
-        className="grid md:grid-cols-3 gap-6 mt-20 max-w-5xl w-full relative z-10"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={{
-          hidden: {},
-          visible: { transition: { staggerChildren: 0.2 } },
-        }}
-      >
-        {FEATURES.map((feature, index) => (
-          <motion.div
-            key={index}
-            className="p-6 rounded-2xl border border-red-200 dark:border-orange-900/30 bg-white/70 dark:bg-gray-900/50 shadow-lg backdrop-blur-sm text-left"
-            variants={{
-              hidden: { opacity: 0, y: 40 },
-              visible: { opacity: 1, y: 0 },
-            }}
-            transition={{ duration: 0.7 }}
-          >
-            <div className="text-4xl mb-3">{feature.icon}</div>
-            <h3 className="text-lg font-semibold mb-2 text-red-700 dark:text-orange-300">
-              {feature.title}
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300">
-              {feature.description}
-            </p>
-          </motion.div>
-        ))}
-      </motion.div>
-
-      <motion.div
-        className="mt-20 mb-12 relative z-10"
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-      >
-        <h2 className="text-3xl font-bold mb-4 text-black dark:text-white">
-          Ready to Talk Some Trash?
-        </h2>
-        <Link href={isSignedIn ? "/lobby" : "/sign-up"}>
-          <Button
-            size="lg"
-            className="bg-red-600 hover:bg-red-500 text-white px-12 py-6 text-lg shadow-xl"
-          >
-            Start Roasting →
-          </Button>
+      <header className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
+        <Link href="/" aria-label="ProjectKids home">
+          <BrandMark />
         </Link>
-      </motion.div>
-    </main>
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <SignedOut>
+            <Link
+              href="/sign-in"
+              className="text-sm font-bold underline underline-offset-4"
+            >
+              Sign in
+            </Link>
+          </SignedOut>
+          <SignedIn>
+            <Link
+              href="/dashboard"
+              className="text-sm font-bold underline underline-offset-4"
+            >
+              My projects
+            </Link>
+            <UserButton />
+          </SignedIn>
+        </div>
+      </header>
+
+      <main id="main">
+        {/* Hero: the form is the first thing a child can do, the sample sheet shows the result */}
+        <section className="mx-auto grid max-w-6xl items-center gap-12 px-4 pb-20 pt-8 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:pt-14">
+          <div className="space-y-8">
+            <div className="space-y-4">
+              <h1 className="font-[family-name:var(--font-display)] text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
+                Type a topic. Get a finished school project.
+              </h1>
+              <p className={`max-w-prose text-lg ${BODY_TEXT}`}>
+                Pictures, an introduction, a summary and a bibliography, all in
+                one PDF. Written for your age and built from real web pages.
+              </p>
+            </div>
+            <div className="max-w-xl">
+              <HeroTopicForm />
+            </div>
+          </div>
+          <HeroProjectDemo />
+        </section>
+
+        {/* How it works - a real sequence, so numbered */}
+        <section
+          aria-labelledby="how-title"
+          className="border-y-2 border-[#14213D] bg-white py-16 dark:border-[#E8EEFF] dark:bg-[#17203A]"
+        >
+          <div className="mx-auto max-w-6xl px-4 sm:px-6">
+            <h2 id="how-title" className={SECTION_TITLE}>
+              From topic to PDF in three steps
+            </h2>
+            <ol className="mt-10 grid gap-8 md:grid-cols-3">
+              {STEPS.map((step, i) => (
+                <li key={step.title} className="flex gap-4">
+                  <span
+                    aria-hidden
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-[#14213D] bg-[#FFE45E] font-[family-name:var(--font-display)] text-lg font-extrabold text-[#14213D] dark:border-[#E8EEFF]"
+                  >
+                    {i + 1}
+                  </span>
+                  <div>
+                    <h3 className="font-[family-name:var(--font-display)] text-xl font-extrabold">
+                      {step.title}
+                    </h3>
+                    <p className={`mt-1 ${BODY_TEXT}`}>{step.text}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+
+        {/* Templates */}
+        <section
+          aria-labelledby="templates-title"
+          className="mx-auto max-w-6xl px-4 py-20 sm:px-6"
+        >
+          <div className="max-w-2xl">
+            <h2 id="templates-title" className={SECTION_TITLE}>
+              Four templates, and you can switch any time
+            </h2>
+            <p className={`mt-3 text-lg ${BODY_TEXT}`}>
+              The words stay the same. Only the layout changes, so try them all
+              before you print.
+            </p>
+          </div>
+          <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {TEMPLATE_LIST.map((t) => (
+              <li
+                key={t.id}
+                className="flex flex-col gap-4 rounded-2xl border-2 border-[#14213D] bg-white p-4 dark:border-[#E8EEFF] dark:bg-[#17203A]"
+              >
+                <TemplateSketch
+                  id={t.id}
+                  accent={t.accent}
+                  soft={t.accentSoft}
+                />
+                <div>
+                  <h3 className="font-[family-name:var(--font-display)] text-lg font-extrabold">
+                    <span aria-hidden>{t.emoji} </span>
+                    {t.name}
+                  </h3>
+                  <p className={`mt-1 text-sm ${BODY_TEXT}`}>{t.description}</p>
+                  <p
+                    className="mt-2 inline-block rounded-full px-2.5 py-0.5 text-xs font-bold text-[#14213D]"
+                    style={{ backgroundColor: t.accentSoft }}
+                  >
+                    Best for: {t.bestFor}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* Reading levels + what's inside */}
+        <section
+          aria-labelledby="levels-title"
+          className="border-y-2 border-[#14213D] bg-[#FFE45E]/30 py-20 dark:border-[#E8EEFF] dark:bg-[#FFE45E]/5"
+        >
+          <div className="mx-auto grid max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-2">
+            <div>
+              <h2 id="levels-title" className={SECTION_TITLE}>
+                The same fact, at three reading levels
+              </h2>
+              <p className={`mb-6 mt-3 text-lg ${BODY_TEXT}`}>
+                Pick the level that fits. Younger readers get shorter sentences
+                and bigger text. Older readers get more detail and dates.
+              </p>
+              <ReadingLevelDemo />
+            </div>
+            <div>
+              <h2 className={SECTION_TITLE}>Every project includes</h2>
+              <ul className="mt-6 space-y-3">
+                {INSIDE.map((item) => (
+                  <li key={item} className="flex items-start gap-3 text-lg">
+                    <span
+                      aria-hidden
+                      className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#14A38B] text-xs font-extrabold text-white"
+                    >
+                      ✓
+                    </span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        {/* Grown-ups */}
+        <section
+          aria-labelledby="grownups-title"
+          className="mx-auto max-w-6xl px-4 py-20 sm:px-6"
+        >
+          <h2 id="grownups-title" className={SECTION_TITLE}>
+            For parents and teachers
+          </h2>
+          <dl className="mt-10 grid gap-8 md:grid-cols-3">
+            {GROWN_UP_NOTES.map((note) => (
+              <div
+                key={note.title}
+                className="border-l-4 border-[#0E7FC1] pl-4"
+              >
+                <dt className="font-[family-name:var(--font-display)] text-lg font-extrabold">
+                  {note.title}
+                </dt>
+                <dd className={`mt-1 ${BODY_TEXT}`}>{note.text}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        {/* Closing call to action */}
+        <section
+          aria-labelledby="cta-title"
+          className="mx-auto max-w-6xl px-4 pb-24 sm:px-6"
+        >
+          <div className="rounded-3xl border-2 border-[#14213D] bg-[#0E7FC1] px-6 py-12 text-center text-white shadow-[8px_8px_0_#14213D] dark:border-[#E8EEFF] dark:shadow-[8px_8px_0_#E8EEFF] sm:px-12">
+            <h2
+              id="cta-title"
+              className="font-[family-name:var(--font-display)] text-3xl font-extrabold sm:text-4xl"
+            >
+              Got a project due? Start it now.
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl text-lg text-white/90">
+              Sign in, type your topic and have a draft ready in about a minute.
+            </p>
+            <div className="mt-8">
+              <HomeCta label="Start a project" />
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer className="border-t-2 border-[#14213D]/15 py-8 dark:border-[#E8EEFF]/15">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 sm:px-6">
+          <BrandMark />
+          <p className={`max-w-md text-sm ${BODY_TEXT}`}>
+            Projects are written from the web pages listed in each bibliography.
+            Read those pages too, and check anything important.
+          </p>
+        </div>
+      </footer>
+    </div>
   );
 }

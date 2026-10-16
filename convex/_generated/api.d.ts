@@ -9,8 +9,11 @@
  */
 
 import type * as constants from "../constants.js";
+import type * as generate from "../generate.js";
 import type * as parse from "../parse.js";
 import type * as projects from "../projects.js";
+import type * as projectsData from "../projectsData.js";
+import type * as research from "../research.js";
 import type * as user from "../user.js";
 
 import type {
@@ -21,8 +24,11 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   constants: typeof constants;
+  generate: typeof generate;
   parse: typeof parse;
   projects: typeof projects;
+  projectsData: typeof projectsData;
+  research: typeof research;
   user: typeof user;
 }>;
 

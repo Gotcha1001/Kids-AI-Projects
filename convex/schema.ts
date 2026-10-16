@@ -53,4 +53,9 @@ export default defineSchema({
   })
     .index("by_user_and_created", ["userId", "createdAt"])
     .index("by_slug", ["slug"]),
+
+  generations: defineTable({
+    userId: v.id("users"),
+    createdAt: v.number(),
+  }).index("by_user_and_created", ["userId", "createdAt"]),
 });
