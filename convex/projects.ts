@@ -14,6 +14,8 @@ import {
   MAX_PROJECTS_PER_DAY,
   MAX_SECTIONS,
   MIN_SECTIONS,
+  STALE_MS,
+  WATCHDOG_DELAY_MS,
 } from "./constants";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -191,6 +193,11 @@ export const create = mutation({
     await ctx.scheduler.runAfter(0, internal.generate.generateProject, {
       projectId,
     });
+    await ctx.scheduler.runAfter(
+      WATCHDOG_DELAY_MS,
+      internal.projectsData.failIfStuck,
+      { projectId },
+    );
 
     return { projectId, slug };
   },
@@ -235,7 +242,9 @@ export const regenerate = mutation({
   args: { projectId: v.id("projects") },
   handler: async (ctx, { projectId }) => {
     const project = await getOwnedProject(ctx, projectId);
-    if (project.status !== "done" && project.status !== "failed") {
+    const inProgress = project.status !== "done" && project.status !== "failed";
+    // A project that has made no progress for STALE_MS is stuck - allow a retry
+    if (inProgress && Date.now() - project.updatedAt < STALE_MS) {
       throw new ConvexError("This project is still being built.");
     }
     await ctx.db.patch(projectId, {
@@ -254,6 +263,11 @@ export const regenerate = mutation({
     await ctx.scheduler.runAfter(0, internal.generate.generateProject, {
       projectId,
     });
+    await ctx.scheduler.runAfter(
+      WATCHDOG_DELAY_MS,
+      internal.projectsData.failIfStuck,
+      { projectId },
+    );
   },
 });
 
@@ -264,3 +278,21 @@ export const remove = mutation({
     await ctx.db.delete(projectId);
   },
 });
+
+async function enforceDailyLimit(
+  ctx: MutationCtx,
+  userId: Id<"users">,
+): Promise<void> {
+  const recent = await ctx.db
+    .query("generations")
+    .withIndex("by_user_and_created", (q) =>
+      q.eq("userId", userId).gte("createdAt", Date.now() - DAY_MS),
+    )
+    .take(MAX_PROJECTS_PER_DAY);
+  if (recent.length >= MAX_PROJECTS_PER_DAY) {
+    throw new ConvexError(
+      `You've reached ${MAX_PROJECTS_PER_DAY} projects in 24 hours. Come back tomorrow!`,
+    );
+  }
+  await ctx.db.insert("generations", { userId, createdAt: Date.now() });
+}

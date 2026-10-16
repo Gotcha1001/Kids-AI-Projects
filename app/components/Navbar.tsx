@@ -1,35 +1,34 @@
 "use client";
 
+import Link from "next/link";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { useUserContext } from "../context/UserContext";
-import { ThemeToggle } from "./ThemeToggle";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { BrandMark } from "@/components/BrandMark";
 
+// HUD navbar: frosted dark glass with a thin cyan edge. (ThemeToggle removed: the app is dark-only now.)
 export default function Navbar() {
   return (
-    <motion.nav
-      className="flex items-center justify-between px-6 py-4 border-b bg-white dark:bg-gradient-to-r dark:from-gray-900 dark:via-gray-950 dark:to-gray-900 border-gray-200 dark:border-green-900/30 shadow-sm"
-      initial={{ y: -40, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.4 }}
-    >
-      <SidebarTrigger className="md:hidden mr-2" />
-      <Link href="/" className="text-xl font-black text-black dark:text-white tracking-tight">
-        🟢 <span className="text-red-500">GREMLIN</span> <span className="text-green-500">INC.</span>
-      </Link>
+    <nav className="sticky top-0 z-30 flex items-center justify-between border-b border-cyan-400/20 bg-[#04070a]/70 px-4 py-3 shadow-[0_1px_30px_-12px_rgba(34,211,238,0.5)] backdrop-blur-md sm:px-6">
+      <div className="flex items-center gap-2">
+        <SidebarTrigger className="text-cyan-200 md:hidden" />
+        <Link href="/" aria-label="ProjectKids home">
+          <BrandMark />
+        </Link>
+      </div>
       <div className="flex items-center gap-3">
         <SignedOut>
-          <Link href="/sign-in"><Button variant="ghost" className="text-gray-700 dark:text-gray-200 hover:text-red-600">Sign In</Button></Link>
-          <Link href="/sign-up"><Button className="bg-red-600 dark:bg-red-700 text-white hover:bg-red-500">Sign Up</Button></Link>
+          <Link href="/sign-in">
+            <Button variant="ghost">Sign in</Button>
+          </Link>
+          <Link href="/sign-up">
+            <Button>Sign up</Button>
+          </Link>
         </SignedOut>
         <SignedIn>
-          <ThemeToggle />
           <UserButton afterSignOutUrl="/" />
         </SignedIn>
       </div>
-    </motion.nav>
+    </nav>
   );
 }
