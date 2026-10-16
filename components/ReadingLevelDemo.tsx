@@ -19,6 +19,10 @@ const SAMPLES: Record<AgeGroup, { text: string; size: string }> = {
     text: "Blue whales can reach about 30 metres in length, making them the largest animals known to have existed. They are baleen whales: instead of teeth, they filter huge volumes of water through plates in their mouths to trap krill.",
     size: "text-base leading-relaxed",
   },
+  university: {
+    text: "The blue whale (Balaenoptera musculus) is a rorqual and the largest animal known to have existed, reaching roughly 30 metres in length. As a baleen whale, it relies on lunge feeding: it engulfs enormous volumes of krill-laden water and filters it through keratin baleen plates, a strategy that supports its extreme body size.",
+    size: "text-base leading-relaxed",
+  },
 };
 
 export function ReadingLevelDemo() {
