@@ -15,12 +15,15 @@ import {
 } from "@/convex/constants";
 import { AGE_LABELS } from "@/lib/types";
 import { getErrorMessage } from "@/lib/errors";
-
 import { cn } from "@/lib/utils";
-import { stickerButton } from "@/components/Styles";
-
-const CHOICE =
-  "rounded-xl border-2 p-3 text-left transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FFE45E]";
+import {
+  hudChoice,
+  hudChoiceOff,
+  hudChoiceOn,
+  hudInput,
+  hudLabel,
+  stickerButton,
+} from "@/components/Styles";
 
 function CreateForm() {
   const router = useRouter();
@@ -54,18 +57,21 @@ function CreateForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="mx-auto max-w-3xl space-y-8">
+    <form
+      onSubmit={onSubmit}
+      className="hud-panel mx-auto max-w-3xl space-y-8 p-6 sm:p-8"
+    >
       <header>
-        <h1 className="font-[family-name:var(--font-display)] text-3xl font-extrabold">
+        <h1 className="font-[family-name:var(--font-display)] text-3xl font-extrabold tracking-tight text-stone-50">
           New project
         </h1>
-        <p className="text-muted-foreground">
+        <p className="mt-1 text-stone-400">
           Tell us the topic. We find the facts, pictures and sources.
         </p>
       </header>
 
       <div>
-        <label htmlFor="topic" className="mb-1 block text-sm font-bold">
+        <label htmlFor="topic" className={hudLabel}>
           My project is about
         </label>
         <input
@@ -76,12 +82,12 @@ function CreateForm() {
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
           placeholder="History of South Africa"
-          className="w-full rounded-lg border-2 bg-transparent px-3 py-2 text-lg"
+          className={cn(hudInput, "text-lg")}
         />
       </div>
 
       <fieldset>
-        <legend className="mb-2 text-sm font-bold">Reading level</legend>
+        <legend className={hudLabel}>Reading level</legend>
         <div className="grid gap-3 sm:grid-cols-3">
           {AGE_GROUPS.map((g) => (
             <button
@@ -90,15 +96,15 @@ function CreateForm() {
               aria-pressed={ageGroup === g}
               onClick={() => setAgeGroup(g)}
               className={cn(
-                CHOICE,
-                ageGroup === g
-                  ? "border-[#14213D] bg-[#FFE45E]/40 dark:border-[#FFE45E]"
-                  : "border-border",
+                hudChoice,
+                ageGroup === g ? hudChoiceOn : hudChoiceOff,
               )}
             >
               <span className="text-xl">{AGE_LABELS[g].emoji}</span>
-              <span className="block font-bold">{AGE_LABELS[g].label}</span>
-              <span className="text-xs text-muted-foreground">
+              <span className="block font-bold text-stone-50">
+                {AGE_LABELS[g].label}
+              </span>
+              <span className="text-xs text-stone-400">
                 {AGE_LABELS[g].hint}
               </span>
             </button>
@@ -107,7 +113,7 @@ function CreateForm() {
       </fieldset>
 
       <fieldset>
-        <legend className="mb-2 text-sm font-bold">Template</legend>
+        <legend className={hudLabel}>Template</legend>
         <div className="grid gap-3 sm:grid-cols-2">
           {TEMPLATE_LIST.map((t) => (
             <button
@@ -115,26 +121,18 @@ function CreateForm() {
               type="button"
               aria-pressed={template === t.id}
               onClick={() => setTemplate(t.id)}
-              style={
-                template === t.id
-                  ? {
-                      borderColor: t.accent,
-                      backgroundColor: `${t.accentSoft}66`,
-                    }
-                  : undefined
-              }
-              className={cn(CHOICE, template !== t.id && "border-border")}
+              className={cn(
+                hudChoice,
+                template === t.id ? hudChoiceOn : hudChoiceOff,
+              )}
             >
-              <span className="font-bold">
+              <span className="font-bold text-stone-50">
                 {t.emoji} {t.name}
               </span>
-              <span className="block text-sm text-muted-foreground">
+              <span className="block text-sm text-stone-400">
                 {t.description}
               </span>
-              <span
-                className="text-xs font-semibold"
-                style={{ color: t.accent }}
-              >
+              <span className="font-mono text-xs font-semibold text-cyan-300">
                 Best for: {t.bestFor}
               </span>
             </button>
@@ -144,8 +142,8 @@ function CreateForm() {
 
       <div className="grid gap-6 sm:grid-cols-2">
         <div>
-          <label htmlFor="sections" className="mb-1 block text-sm font-bold">
-            Sections: {sectionCount}
+          <label htmlFor="sections" className={hudLabel}>
+            Sections: <span className="text-cyan-300">{sectionCount}</span>
           </label>
           <input
             id="sections"
@@ -154,11 +152,11 @@ function CreateForm() {
             max={MAX_SECTIONS}
             value={sectionCount}
             onChange={(e) => setSectionCount(Number(e.target.value))}
-            className="w-full"
+            className="w-full accent-cyan-400"
           />
         </div>
         <div>
-          <label htmlFor="student" className="mb-1 block text-sm font-bold">
+          <label htmlFor="student" className={hudLabel}>
             Name on the cover (optional)
           </label>
           <input
@@ -166,7 +164,7 @@ function CreateForm() {
             maxLength={60}
             value={studentName}
             onChange={(e) => setStudentName(e.target.value)}
-            className="w-full rounded-lg border-2 bg-transparent px-3 py-2"
+            className={hudInput}
           />
         </div>
       </div>
@@ -174,7 +172,7 @@ function CreateForm() {
       <button
         type="submit"
         disabled={submitting || topic.trim().length < 3}
-        className={cn(stickerButton, "disabled:opacity-60")}
+        className={stickerButton}
       >
         {submitting ? "Starting…" : "Make my project"}
       </button>

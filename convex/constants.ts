@@ -82,15 +82,30 @@ export const glossaryValidator = v.object({
 
 /* ---------- Templates (layout only - content is the same for all) ---------- */
 
+// convex/constants.ts  -  REPLACE ONLY the TemplateMeta interface and the TEMPLATES block.
+// Everything else in constants.ts stays exactly as it is.
+//
+// All four templates now share the modal's cyan palette. They differ only in
+// layout (already handled in ProjectPreview / ProjectPdf by template id).
+//   accent     = cyan used by the dark web UI
+//   accentSoft = panel tint (kept so any code that still reads it compiles)
+//   pdfAccent  = darker cyan for the printed PDF, so white text on it stays
+//                readable on white paper
+
 export interface TemplateMeta {
   id: TemplateId;
   name: string;
   emoji: string;
   description: string;
   bestFor: string;
-  accent: string; // hex, used by web preview AND pdf
-  accentSoft: string;
+  accent: string; // web UI
+  accentSoft: string; // web UI panel tint
+  pdfAccent: string; // PDF only (white paper)
 }
+
+const HUD_ACCENT = "#22d3ee";
+const HUD_SOFT = "#0f1c26";
+const HUD_PDF = "#0e7490";
 
 export const TEMPLATES: Record<TemplateId, TemplateMeta> = {
   classic: {
@@ -99,8 +114,9 @@ export const TEMPLATES: Record<TemplateId, TemplateMeta> = {
     emoji: "📘",
     description: "Clean report look with numbered sections.",
     bestFor: "Any topic",
-    accent: "#2563eb",
-    accentSoft: "#dbeafe",
+    accent: HUD_ACCENT,
+    accentSoft: HUD_SOFT,
+    pdfAccent: HUD_PDF,
   },
   factfile: {
     id: "factfile",
@@ -108,8 +124,9 @@ export const TEMPLATES: Record<TemplateId, TemplateMeta> = {
     emoji: "🔎",
     description: "Bright 'Did you know?' boxes right after the introduction.",
     bestFor: "Animals and science",
-    accent: "#059669",
-    accentSoft: "#d1fae5",
+    accent: HUD_ACCENT,
+    accentSoft: HUD_SOFT,
+    pdfAccent: HUD_PDF,
   },
   storybook: {
     id: "storybook",
@@ -117,8 +134,9 @@ export const TEMPLATES: Record<TemplateId, TemplateMeta> = {
     emoji: "🎨",
     description: "Big pictures, big friendly text, one section per page.",
     bestFor: "Younger kids",
-    accent: "#d97706",
-    accentSoft: "#fef3c7",
+    accent: HUD_ACCENT,
+    accentSoft: HUD_SOFT,
+    pdfAccent: HUD_PDF,
   },
   timeline: {
     id: "timeline",
@@ -126,8 +144,9 @@ export const TEMPLATES: Record<TemplateId, TemplateMeta> = {
     emoji: "⏳",
     description: "Sections sit along a line, one step after another.",
     bestFor: "History topics",
-    accent: "#7c3aed",
-    accentSoft: "#ede9fe",
+    accent: HUD_ACCENT,
+    accentSoft: HUD_SOFT,
+    pdfAccent: HUD_PDF,
   },
 };
 

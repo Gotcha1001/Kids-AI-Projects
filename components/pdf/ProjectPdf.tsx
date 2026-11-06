@@ -281,7 +281,7 @@ function FunFactsGrid({ project, s }: { project: ProjectView; s: Styles }) {
 
 export function ProjectPdf({ project, imageData }: ProjectPdfProps) {
   const meta = TEMPLATES[project.template];
-  const s = makeStyles(meta.accent);
+  const s = makeStyles(meta.pdfAccent);
   const heroImage = project.images
     .map((i) => imageData[i.url])
     .find((src): src is string => Boolean(src));
